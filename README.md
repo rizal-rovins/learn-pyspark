@@ -6,7 +6,7 @@ Each tutorial is structured in a Markdown file and focuses on a single topic, fr
 
 ---
 
-## 🚀 Features
+## Features
 
 - Markdown-based tutorials
 - Covers beginner to advanced PySpark concepts
