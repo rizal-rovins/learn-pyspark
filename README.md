@@ -31,8 +31,6 @@ Each tutorial is structured in a Markdown file and focuses on a single topic, fr
 | [Grouping Data](./grouping-data.md) | Perform aggregations using `groupBy`. |
 | [Joining Data](./joining-data.md) | Combine multiple datasets using joins. |
 
----
-
 ### Advanced Tutorials
 
 | Title | Description |
