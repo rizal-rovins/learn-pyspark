@@ -23,6 +23,7 @@ Each tutorial is structured in a Markdown file and focuses on a single topic, fr
 |-------|-------------|
 | [Introduction to PySpark](./tutorials/introduction-to-pyspark.md) | Learn what PySpark is and how it fits into the big data ecosystem. |
 | [Setting Up Spark Session](./tutorials/setting-up-spark-session.md) | Learn how to create and configure a SparkSession in PySpark. |
+| [Reading & Writing Files](./tutorials/reading-csv-files.md) | Read and write files in PySpark. |
 | [Working with CSV Files](./tutorials/reading-csv-files.md) | Read and write CSVs with PySpark DataFrames. |
 | [Working with JSON Files](./tutorials/reading-json-files.md) | Read and write JSON data in PySpark. |
 | [Referring to Columns](./tutorials/referring-to-columns.md) | Access columns using different PySpark syntax styles. |
@@ -30,6 +31,7 @@ Each tutorial is structured in a Markdown file and focuses on a single topic, fr
 | [Filtering Data](./tutorials/filtering-data.md) | Apply filters to refine datasets in PySpark. |
 | [Grouping Data](./tutorials/grouping-data.md) | Perform aggregations using `groupBy`. |
 | [Joining Data](./tutorials/joining-data.md) | Combine multiple datasets using joins. |
+| [Handling Nulls & Missing Data](./tutorials/handling-nulls.md) | Clean and transform missing data. |
 
 ### Advanced Tutorials
 
@@ -55,11 +57,18 @@ Pull requests are welcome! If you’d like to add:
 ### Guidelines
 
 * Keep the format consistent with existing tutorials.
-* No title is required in the beginning of the tutorial md. Refer the existing files.
+* Use **kebab-case** for file names. Example: `handling-nulls.md`, `window-functions-lead-lag.md`
+* No title is required in the beginning of the tutorial md. The page title is handled by the website.
 * Do not use emojis in the content (only in some places where it may be relevant).
 * Use clear section headers (`##`) and code blocks where needed.
 * Prefer concise explanations over long paragraphs.
 * Ensure code examples are runnable and formatted properly.
+
+### Before submitting a PR
+
+* Ensure markdown renders correctly.
+* Check for consistent formatting with existing tutorials.
+* Run and validate all code snippets.
 
 ---
 
