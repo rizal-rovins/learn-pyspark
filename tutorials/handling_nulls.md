@@ -1,4 +1,4 @@
-# 18. 🔐 Handling Nulls & Missing Data in PySpark
+
 
 Working with missing values is one of the most common tasks in data
 engineering. PySpark provides several useful functions to clean,
@@ -116,4 +116,3 @@ df_replace.show()
 
 ------------------------------------------------------------------------
 
-Made for **PySpark Data Engineering Interview Preparation** 🚀
