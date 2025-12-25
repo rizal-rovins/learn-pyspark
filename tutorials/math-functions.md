@@ -1,6 +1,6 @@
 PySpark provides a range of functions to perform arithmetic and mathematical operations, making it easier to manipulate numerical data. These functions are part of the `pyspark.sql.functions` module and can be applied to DataFrame columns.
 
-Here we will go through the most commonly used functions. You can refer to official documention for the entire list of functions [here](https://spark.apache.org/docs/3.5.3/sql-ref-functions-builtin.html#mathematical-functions).
+Here we will go through the most commonly used functions. You can refer to official documention for the entire list of functions [here](https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html#mathematical-functions).
 
 ---
 

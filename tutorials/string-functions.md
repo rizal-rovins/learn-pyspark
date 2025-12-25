@@ -2,7 +2,7 @@ String functions in PySpark allow you to manipulate and process textual data. Th
 
 Below, we will cover some of the most commonly used string functions in PySpark, with examples that demonstrate how to use the `withColumn` method for transformation.
 
-You can refer to the official documentation for the entire list of functions [here](https://spark.apache.org/docs/3.5.3/sql-ref-functions-builtin.html#string-functions).
+You can refer to the official documentation for the entire list of functions [here](https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html#string-functions).
 
 ---
 
