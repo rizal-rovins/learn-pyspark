@@ -1,6 +1,9 @@
 Working with missing values is one of the most common tasks in data engineering. PySpark provides several useful functions to clean, replace, or drop null values.
 
-------------------------------------------------------------------------
+### Practice Question
+Read the tutorial below and try solving this problem to get hands-on practice [here](../pyspark-coding-interview-questions/handling-null-values).
+
+---
 
 ## 1. `na.fill()`
 
@@ -32,7 +35,7 @@ df_filled.show()
     |  3|  0|       C|
     +---+---+--------+
 
-------------------------------------------------------------------------
+---
 
 ## 2. `dropna()`
 
@@ -65,7 +68,7 @@ df.dropna(how="all")
 df.dropna(subset=["age"])
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 3. `na.replace()`
 
@@ -91,7 +94,7 @@ df_replace.show()
     |  3|null| Category-C|
     +---+----+-----------+
 
-------------------------------------------------------------------------
+---
 
 ## 4. `where()` / `filter()`
 
@@ -146,7 +149,7 @@ df.na.fill({"age": 0}).where("age > 0").show()
 | `where()` / `filter()` | Filter rows using conditions (null-safe) |
 
 
-------------------------------------------------------------------------
+---
 
 ## Best Practices
 
@@ -156,4 +159,4 @@ df.na.fill({"age": 0}).where("age > 0").show()
 -   Use `na.replace()` for value corrections (not only nulls).
 -   Use `where()` / `filter()` when you need **conditional control** instead of blindly dropping data.
 
-------------------------------------------------------------------------
+---
