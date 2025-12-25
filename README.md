@@ -68,6 +68,7 @@ Pull requests are welcome! If you’d like to add:
 
 * Ensure markdown renders correctly.
 * Check for consistent formatting with existing tutorials.
+* If it contains a new file, add the details in the `README.md` as well.
 * Run and validate all code snippets.
 
 ---
