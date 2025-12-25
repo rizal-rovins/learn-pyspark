@@ -52,6 +52,17 @@ Pull requests are welcome! If you’d like to add:
 * Code examples
 * Corrections or formatting fixes
 
+### Guidelines
+
+* Keep the format consistent with existing tutorials.
+* No title is required in the beginning of the tutorial md. Refer the existing files.
+* Do not use emojis in the content (only in some places where it may be relevant).
+* Use clear section headers (`##`) and code blocks where needed.
+* Prefer concise explanations over long paragraphs.
+* Ensure code examples are runnable and formatted properly.
+
+---
+
 Please open an issue or PR with your suggestion 🙌
 
 ---
