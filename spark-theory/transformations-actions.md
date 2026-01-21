@@ -8,7 +8,7 @@ Transformations are “recipe steps” that Spark records in the lineage/DAG rat
 
 Two useful sub-types matter for performance:
 - **Narrow transformations**: Each output partition depends on a single input partition (typically no shuffle), e.g., `filter`, `map`, `select`.
-- **Wide transformations**: Output partitions depend on many input partitions (often causes shuffle), e.g., `groupBy`, `join`, `distinct`, `repartition`—and shuffles are common stage boundaries.
+- **Wide transformations**: Output partitions depend on many input partitions (often causes shuffle), e.g., `groupBy`, `join`, `distinct`, `repartition`. For example - when you group by `customer_id` and need to sum up the `amount`, all the rows of same `customer_id` (which may be present in different partitions across the executors) needs to be brought to the same partition to accurately calculate the total sum for that `customer_id`.
 
 ![Narrow v/s Wide Transformation](/images/narrow-wide-transformations.png)
 
