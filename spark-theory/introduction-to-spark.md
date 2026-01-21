@@ -55,7 +55,13 @@ The provided image  illustrates Apache Spark as a layered, unified stack where h
 
 
 **1. Language APIs (Top Layer)**
-At the very top, the diagram shows support for four major programming languages: **Scala, Java, Python, and R**. This flexibility allows Data Engineers and Data Scientists to interact with Spark using the language they are most comfortable with, without needing to learn low-level cluster programming.
+At the very top, the diagram shows support for four major programming languages: 
+* **Python**
+* **Scala**
+* **Java**
+* **R**
+
+This flexibility allows Data Engineers and Data Scientists to interact with Spark using the language they are most comfortable with, without needing to learn low-level cluster programming.
 
 **2. Domain-Specific Libraries (Blue Layer)**
 The four blue boxes represent Spark's built-in libraries that handle specific data workload types:
