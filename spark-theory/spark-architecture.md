@@ -46,6 +46,40 @@ Executors are distributed agents responsible for two things: **Executing code** 
 
 ***
 
+### **Driver & Executor Configuration**
+
+Configuring the Driver and Executors correctly is a critical first step in Spark performance tuning. These properties establish the baseline resources (memory and CPU) available for your job to execute efficiently. Setting them correctly is essential to prevent OutOfMemory errors and ensure your cluster is utilized effectively.
+
+#### **Driver Properties**
+The Driver needs enough memory to store the DAG, task metadata, and any results collected back to it (e.g., via `.collect()`).
+
+| Property | Default | Description |
+| :--- | :--- | :--- |
+| `spark.driver.memory` | 1g | Amount of memory to use for the driver process. If your job collects large results, increase this. |
+| `spark.driver.cores` | 1 | Number of cores to use for the driver process (only in cluster mode). For production jobs, set it to **2-4** (default is 1). This is cheap insurance against stability issues.|
+
+#### **Executor Properties**
+Executors do the heavy lifting. Their configuration balances **parallelism** (cores) against memory capacity.
+
+**What is Parallelism?**
+
+In Spark, parallelism defines **how many tasks can run at the exact same time** across the entire cluster.
+
+It is directly determined by the total number of cores available in your executors.
+*   **1 Core = 1 Task = 1 Partition** processed at a time.
+*   If you have 10 executors, and each has 4 cores, your total parallelism is **40**.
+*   This means Spark can process **40 partitions** of data simultaneously.
+
+If you have 100 partitions of data but only 40 cores, Spark will process the first 40, then the next 40, and finally the last 20.
+
+| Property | Default | Description |
+| :--- | :--- | :--- |
+| `spark.executor.memory` | 1g | Amount of memory to use per executor process. This is split between execution memory (shuffles/joins) and storage memory (cache). |
+| `spark.executor.cores` | 1 (YARN), all (Standalone) | The number of cores to use on each executor. **Best Practice:** Keep this between 3-5 cores for optimal garbage collection (GC) performance. |
+| `spark.executor.instances` | 2 | The number of executors to launch for this application (when using static allocation). |
+
+***
+
 ### **How a Spark Job Runs (Execution Flow)**
 
 ![Spark Architecture](/images/spark-architecture.png)
