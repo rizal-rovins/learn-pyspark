@@ -12,6 +12,22 @@ Two useful sub-types matter for performance:
 
 ![Narrow v/s Wide Transformation](/images/narrow-wide-transformations.png)
 
+### Performance Implications of Transformations
+
+**1. Narrow Transformations: Pipelining (High Efficiency)**
+*   **No Data Movement:** Since the data required for the computation resides on the same partition, there is no need to transfer data over the network between executors.
+*   **Pipelining:** Spark optimizes narrow transformations by collapsing them into a single stage. For example, if you write `df.filter(...).map(...).select(...)`, Spark fuses these three operations into a single task. The engine reads a record, filters it, maps it, and selects it in one pass, without writing intermediate results to memory or disk.
+*   **Speed:** These are extremely fast and memory-efficient.
+
+**2. Wide Transformations: The Shuffle Cost (High Overhead)**
+*   **The Shuffle:** This is the most expensive operation in Spark. It involves:
+    *   **Disk I/O:** Writing intermediate data to disk (spilling) to ensure fault tolerance and memory management.
+    *   **Network I/O:** Transferring data across different nodes in the cluster to group related keys together.
+    *   **Serialization/Deserialization:** Significant CPU overhead to serialize data for transport and deserialize it at the destination.
+*   **Stage Boundaries:** Wide transformations break the execution plan (DAG) into **Stages**. Spark cannot proceed to the next stage until the current stage (the shuffle) is complete. This acts as a blocking operation, preventing parallelization across the boundary.
+*   **Data Skew:** Wide transformations are prone to data skew. If one key (e.g., a popular `customer_id`) has significantly more data than others, one partition will become massive, causing the specific executor processing it to run out of memory (OOM) or lag behind the others (straggler tasks).
+
+
 ## Actions (what triggers execution)
 Actions force Spark to execute the DAG and either return something to the driver or write results externally. Typical actions include `count`, `collect`, `take`, `first`, `show`, `write.save(...)`, and (in RDD land) `reduce`.
 
