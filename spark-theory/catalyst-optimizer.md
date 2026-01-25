@@ -13,7 +13,7 @@ The diagram below shows the journey of your code. Every time you run a DataFrame
 ![Catalyst Optimizer](/images/catalyst-optimizer.png)
 
 ### Phase 1: Analysis (Unresolved → Logical Plan)
-When you type `df.select("naame")`, Spark doesn't know if "naame" exists or if it's a typo.
+When you type `df.select("name")`, Spark doesn't know if "name" exists or if it's a typo.
 *   **The Unresolved Logical Plan:** Spark reads your code but hasn't checked validity yet.
 *   **The Catalog:** Catalyst looks up the Table/DataFrame metadata.
 *   **Resolution:** It confirms: *"Does column 'name' exist? Is it a string or int?"* If correct, it creates the **Logical Plan**.
