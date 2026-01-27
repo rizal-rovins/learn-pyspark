@@ -8,7 +8,10 @@ Apache Spark is a unified analytics engine that provides parallel and distribute
 
 ### When Was It Developed?
 
-Spark originated in 2009 as a research project at UC Berkeley's AMPLab (Algorithms, Machines, and People Lab), a collaboration among students, researchers, and faculty focused on data-intensive applications. It was open-sourced in early 2010 under a BSD license and later transferred to the Apache Software Foundation in June 2013.
+- Spark originated in 2009 as a research project at UC Berkeley's AMPLab (Algorithms, Machines, and People Lab)
+- AMPLab was a collaboration among students, researchers, and faculty focused on data-intensive applications
+- Open-sourced in early 2010 under a BSD license
+- Transferred to the Apache Software Foundation in June 2013
 
 ### Why Was It Created?
 
@@ -39,6 +42,7 @@ Hadoop MapReduce is a programming model for processing large datasets in a distr
 | **Processing Speed** | Slower due to disk-based storage between operations | 100x faster in-memory, 10x faster on disk   |
 | **Data Storage** | Stores intermediate results on local disk   | Caches data in RAM across distributed workers   |
 | **Execution Model** | Rigid sequential map and reduce phases   | DAG-based execution with optimized task scheduling   |
+| **Fault Tolerance** | Replicates data to disk; re-reads from HDFS on failure | Uses lineage tracking; recomputes lost partitions from source data |
 | **Processing Type** | Primarily batch processing   | Batch, real-time streaming, interactive queries   |
 | **Ease of Use** | Complex, requires more code   | User-friendly APIs in multiple languages   |
 | **Iterative Processing** | Inefficient for machine learning algorithms   | Optimized for iterative algorithms   |
@@ -85,6 +89,10 @@ The "Environment" section on the left illustrates that Spark is decoupled from t
 The bottom section shows Spark's ability to connect to a wide variety of data storage systems. Instead of locking you into a single storage format, it can ingest data from:
 *   **Cloud Storage:** ADLS, GCS, AWS S3.
 *   **Hadoop Ecosystem:** HDFS (Hadoop), Hive, and HBase.
-*   **NoSQL Databases:** Cassandra and Elasticsearch.
-*   **Relational Databases:** MySQL and PostgreSQL.
-*   **Flat Files:** CSV and JSON formats.
+*   **NoSQL Databases:** Cassandra, Elasticsearch, MongoDB, Redis, and DynamoDB.
+*   **Relational Databases:** MySQL, PostgreSQL, Oracle, SQL Server, and Redshift.
+*   **Flat Files:** CSV, JSON, Parquet, Avro, and ORC formats.
+*   **Streaming Sources:** Apache Kafka, Kinesis, and event hubs for real-time data ingestion.
+*   **Cloud Data Warehouses:** Snowflake, BigQuery, and Databricks Delta Lake.
+
+Spark achieves this flexibility through **connectors** - specialized libraries that enable reading and writing to specific systems. Many are built-in, while others are available through third-party packages that you can add to your Spark application.
