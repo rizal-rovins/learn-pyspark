@@ -2,7 +2,7 @@ Apache Spark's performance advantage comes from its unique distributed architect
 
 Apache Spark’s performance advantage comes from its distributed execution model. But the same architecture that makes Spark fast is also the root cause of common production issues like OutOfMemory errors, skewed jobs, and long shuffles.
 
-### **The Big Picture: Driver-Executor Model**
+### **The Driver-Executor Model**
 
 At a high level, every Spark application follows a distributed architecture consisting of two main pieces that communicate with each other:
 
@@ -11,25 +11,27 @@ At a high level, every Spark application follows a distributed architecture cons
 
 They are connected by a **Cluster Manager** which allocates resources.
 
-| Component | Role | Analogy |
+| Component | Role | Key Responsibilities |
 | :--- | :--- | :--- |
-| **Driver** | The "Brain". It runs your `main()` code, creates the `SparkContext`, and orchestrates the work . | The Project Manager who breaks a project into small tasks. |
-| **Cluster Manager** | The "HR Department". It manages resources (CPU/RAM) across the cluster . | The HR rep who hires staff (Executors) for the project. |
-| **Executors** | The "Workers". Processes running on worker nodes that execute tasks and store data . | The employees who actually do the work. |
+| **Driver** | Central coordinator | Converts your code to execution plan, schedules tasks, collects results |
+| **Cluster Manager** | Resource manager | Allocates CPU/memory, launches executors, monitors cluster health |
+| **Executors** | Distributed workers | Run tasks in parallel, cache data partitions, report status to driver |
 
 ***
 
-### **Deep Dive into Components**
+Lets go over these components in detail:
 
 #### **1. The Driver (Master Node)**
 The Driver is the process where your `main()` method runs. It is the control center of your application.
 *   **Responsibilities:**
     *   Converts your user code into tasks.
-    *   Creates the **SparkContext**, the entry point to the cluster.
+    *   Creates the **SparkSession**, the entry point to the cluster.
     *   Constructs a **DAG (Directed Acyclic Graph)** of the job execution.
     *   Schedules tasks on Executors and monitors their progress.
 
 #### **2. The Cluster Manager**
+The Cluster Manager is an external service that allocates resources (CPU and memory) across the cluster and manages the lifecycle of Executors. It acts as the intermediary between the Driver and the worker nodes, ensuring efficient resource distribution across applications.
+
 Spark is agnostic to the underlying cluster manager. It can run on:
 *   **Standalone:** Spark's simple built-in manager.
 *   **YARN:** Hadoop's resource manager (common in big data).
@@ -42,7 +44,7 @@ Executors are distributed agents responsible for two things: **Executing code** 
     *   Run the tasks assigned by the Driver.
     *   Return results to the Driver.
     *   Provide in-memory storage for cached RDDs/DataFrames.
-    *   *Note:* Each application gets its own set of executor processes.
+    *   Each application gets its own set of executor processes.
 
 ***
 
@@ -93,15 +95,27 @@ When you submit a Spark job (e.g., `spark-submit`), the following sequence occur
 5.  **Scheduling:** The Driver sends these tasks to the Executors.
 6.  **Execution:** Executors run the tasks and store data in RAM.
 7.  **Result:** Results are sent back to the Driver or written to disk/storage.
-8.  **Termination:** When `SparkContext.stop()` is called, all executors are terminated and resources released.
+8.  **Termination:** When `spark.stop()` is called, all executors are terminated and resources released.
 
-### **Key Concepts: Job, Stage, and Task**
+### **Understanding Jobs, Stages, and Tasks**
 
 Spark breaks down work hierarchically:
-*   **Application:** The user program built on Spark (includes 1 Driver + many Executors).
-*   **Job:** A parallel computation triggered by an **Action** (e.g., `.count()`, `.collect()`).
-*   **Stage:** A job is divided into smaller sets of tasks called stages. Stages are separated by **Shuffle** operations (when data needs to be redistributed across the network).
-*   **Task:** The smallest unit of work. It represents a single operation applied to a single partition of data.
+
+*   **Application:** The entire user program built on Spark. Think of this as the "project" – it includes one Driver (manager) and multiple Executors (workers) that stay alive until the application ends.
+  
+*   **Job:** A parallel computation triggered by an **Action** (e.g., `.count()`, `.collect()`, `.show()`). Each action creates one job. If your code has 3 actions, Spark runs 3 separate jobs.
+  
+*   **Stage:** Jobs are divided into stages based on **Shuffle boundaries**. A shuffle happens when data must be redistributed across the cluster (like during a `groupBy` or `join`). Stages contain tasks that can run in parallel without network shuffles.
+  
+*   **Task:** The smallest unit of work. One task = one transformation applied to one partition of data. If you have 200 partitions, Spark creates 200 tasks per stage. Tasks run independently on Executors.
+
+**The Flow:**
+```
+1 Application
+  └─ Multiple Jobs (one per Action)
+      └─ Multiple Stages (split by Shuffles)
+          └─ Multiple Tasks (one per Partition)
+```
 
 Since these are very important topics, we will talk about Job, Stage and Tasks in detail in the coming tutorials.
 
@@ -110,7 +124,7 @@ The following table summarizes terms we'll see used to refer to cluster concepts
 | Term                | Meaning                                                                                                                                                                                                                                      |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Application**     | User program built on Spark. Consists of a driver program and executors on the cluster.                                                                                                                                                      |
-| **Driver program**  | The process that runs the `main()` function of the application and creates the `SparkContext`.                                                                                                                                               |
+| **Driver program**  | The process that runs the `main()` function of the application and creates the `SparkSession`.                                                                                                                                               |
 | **Cluster manager** | An external service for acquiring resources on the cluster (e.g., Standalone, YARN, Kubernetes).                                                                                                                                             |
 | **Worker node**     | Any node in the cluster that can run application code.                                                                                                                                                                                       |
 | **Executor**        | A process launched for an application on a worker node that runs tasks and stores data in memory or disk. Each application has its own executors.                                                                                            |
