@@ -19,7 +19,7 @@ Spark was created to address the limitations of Hadoop MapReduce, particularly i
 
 ### How Does It Work?
 
-Spark processes data by keeping it in memory (RAM) rather than writing to disk after each operation. It uses a Directed Acyclic Graph (DAG) execution engine that optimizes task scheduling and reduces latency by eliminating unnecessary disk I/O operations. Spark Core provides essential services like task scheduling, memory management, fault recovery, and job execution, while higher-level components handle specific workloads.
+Spark processes data by keeping it **in memory (RAM)** rather than writing to disk after each operation. It uses a **Directed Acyclic Graph (DAG)** execution engine that optimizes task scheduling and reduces latency by **eliminating unnecessary disk I/O operations**. Spark Core provides essential services like **task scheduling, memory management, fault recovery**, and job execution, while higher-level components handle specific workloads.
 
 ## Issues with Traditional Systems
 
