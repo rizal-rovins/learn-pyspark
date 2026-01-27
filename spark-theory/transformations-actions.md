@@ -3,7 +3,7 @@ Transformations and actions are the two building blocks of every Spark job: tran
 ## Understanding the Basics
 A **transformation** creates a new RDD/DataFrame from an existing one (it describes a step in your pipeline - like a select, filter, join etc) and is evaluated lazily. An **action** asks Spark to materialize a result (return to the driver, write to storage, or otherwise “finish” the computation), which is what triggers a job in Spark’s execution model.
 
-## Transformations (lazy building blocks)
+## Transformations: Defining What to Do
 Transformations are “recipe steps” that Spark records in the lineage/DAG rather than executing immediately, allowing Spark to optimize the plan before running it. Common transformation examples include `select`, `filter`, `withColumn`, `groupBy`, `join`, `distinct`, `repartition`, and `union`.
 
 Before we understand the 2 types of transformations, we need to know what **partitions** are in Spark.
