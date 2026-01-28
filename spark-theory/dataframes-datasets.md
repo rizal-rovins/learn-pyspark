@@ -12,13 +12,15 @@ DataFrames are an **abstraction layer** sitting on top of RDDs. They add a schem
 ## DataFrame vs Dataset
 
 A **Dataset** (mainly in Scala/Java) is a typed API built on top of the same underlying engine as DataFrames, giving compile-time type safety for rows/objects while keeping SQL-style optimizations.  
-In PySpark, “Dataset” isn’t a separate everyday API - DataFrames are the standard interface for structured processing.
+In PySpark, "Dataset" isn't a separate everyday API - DataFrames are the standard interface for structured processing.
 
-| Concept | Best for | What you get |
-|---|---|---|
-| RDD | Low-level control, unstructured/complex custom logic | Manual control, less automatic optimization |
-| DataFrame | 95% of DE ETL use cases | Schema + SQL-like ops + optimizer |
-| Dataset (Scala/Java) | Typed pipelines + optimizer | Types + DataFrame performance model |
+| Concept | Best for | Use Cases | What you get |
+|---|---|---|---|
+| **RDD** | Low-level control, unstructured/complex custom logic | Parsing raw log files, custom partitioning logic, text processing where schema is unknown | Manual control, less automatic optimization |
+| **DataFrame** | 95% of DE ETL use cases | ETL pipelines, data aggregations, joins, reading CSV/Parquet/JSON, SQL analytics, filtering and transformations on structured data  | Schema + SQL-like ops + optimizer |
+| **Dataset** (Scala/Java) | Typed pipelines + optimizer | Domain modeling with case classes, type-safe transformations requiring compile-time checks, functional programming with custom objects | Types + DataFrame performance model |
+
+**Key Difference:** DataFrames handle the vast majority of real-world data engineering workloads - from streaming analytics to machine learning pipelines because they combine ease of use with the Catalyst optimizer's performance benefits. Datasets are primarily used when teams need the additional safety of compile-time type checking in Scala/Java codebases.
 
 ## Why DataFrames are fast
 
@@ -77,4 +79,4 @@ daily_metrics = (
 daily_metrics.write.mode("overwrite").parquet("s3://lake/gold/daily_segment_metrics/")
 ```
 
-Because Spark can “see” the full chain before running, it can apply optimizations such as predicate pushdown (filter early at the source) and projection pushdown (read only required columns) when the source/format supports it.
+Because Spark can “see” the full chain before running, it can apply optimizations such as predicate pushdown (filter early at the source) and projection pushdown (read only required columns) when the source/format supports it. We will talk more about these optimizations in the next post.
