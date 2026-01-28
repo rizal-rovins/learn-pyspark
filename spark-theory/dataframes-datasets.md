@@ -12,7 +12,8 @@ DataFrames are an **abstraction layer** sitting on top of RDDs. They add a schem
 ## DataFrame vs Dataset
 
 A **Dataset** (mainly in Scala/Java) is a typed API built on top of the same underlying engine as DataFrames, giving compile-time type safety for rows/objects while keeping SQL-style optimizations.  
-In PySpark, "Dataset" isn't a separate everyday API - DataFrames are the standard interface for structured processing.
+In PySpark, DataFrames are the standard API. There's no separate Dataset interface.
+
 
 | Concept | Best for | Use Cases | What you get |
 |---|---|---|---|
