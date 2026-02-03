@@ -46,7 +46,7 @@ If you filter `df.filter(col("date") == "2024-01-01")`, Spark pushes this filter
 ### 2. Projection Pushdown (Column Optimization)
 This is often called **Column Pruning**. If your raw data has 100 columns but you only `select("store_id", "revenue")`, Spark "pushes" this requirement down to the reader. It will purely ignore the other 98 columns, drastically reducing the amount of data transferred from disk/storage to memory.
 
-> **Note:** Column pruning is most effective with **columnar file formats** like Parquet, ORC, or Delta Lake. These formats store data by column rather than by row, allowing Spark to read only the specific columns needed without scanning entire rows. Row-based formats like CSV or JSON require reading all columns regardless of your selection.
+> **Note:** Spark pushes column selection down to the data source, but the effectiveness depends on the file format. **Columnar formats** (Parquet, ORC, Delta Lake) can read only the requested columns from disk. These formats store data by column rather than by row, allowing Spark to read only the specific columns needed without scanning entire rows. **Row-based formats** (CSV, JSON) must read entire rows first, then discard unwanted columns in memory.
 
 ## Code Example: Visualizing the Logic
 
