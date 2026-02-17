@@ -1,5 +1,3 @@
-# Adaptive Query Execution (AQE): Spark's Runtime Optimizer
-
 Adaptive Query Execution lets Spark re-optimize your query **while it's running** based on what it actually sees in your data, not just pre-execution guesses. Enabled by default since Spark 3.2.0, AQE adjusts query plans on the fly using real runtime statistics.
 
 ## Why AQE Matters
@@ -35,6 +33,8 @@ spark.conf.set("spark.sql.adaptive.coalescePartitions.parallelismFirst", "true")
 ### 2. Splitting Skewed Shuffle Partitions (in RebalancePartitions)
 
 **The Problem:** Beyond joins, data skew can occur during `REBALANCE` operations where some partitions end up much larger than others.
+
+> **What is REBALANCE?** The `REBALANCE` hint is used to rebalance query result output partitions so that every partition is a reasonable size (not too small, not too big). It's particularly useful when writing query results to storage to avoid too many small files or too few large files. Example: `SELECT /*+ REBALANCE(country) */ * FROM sales`. This hint only works when AQE is enabled.
 
 **AQE's Solution:** When rebalancing partitions, AQE detects skewed partitions and **splits them into smaller chunks** according to the advisory partition size. Small partitions below a threshold (20% of advisory size by default) get merged.
 
@@ -138,10 +138,6 @@ You can see AQE in action in the Spark UI under the SQL tab - look for `Statisti
 | `spark.sql.adaptive.skewJoin.skewedPartitionFactor` | `5.0` | Partition must be 5x median  |
 | `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes` | `256MB` | Partition must be > 256MB  |
 | `spark.sql.adaptive.forceOptimizeSkewedJoin` | `false` | Force optimization with extra shuffle  |
-| **Advanced** |
-| `spark.sql.adaptive.optimizer.excludedRules` | `None` | Disable specific AQE rules  |
-| `spark.sql.adaptive.customCostEvaluatorClass` | `None` | Custom cost evaluator class  |
-
 ***
 
 ## Scenarios where AQE is beneficial:
@@ -189,7 +185,7 @@ result = large_df.join(small_df, "user_id")
 
 ## The Bottom Line
 
-AQE transforms Spark from a "set it and forget it" optimizer into a responsive system that learns from your data as it processes it. You no longer need to:
+AQE turns Spark into a dynamic optimizer that adjusts your query based on what it actually sees in your data at runtime. You no longer need to:
 - Perfectly tune `spark.sql.shuffle.partitions` for every query - AQE coalesces dynamically
 - Manually handle data skew - AQE splits skewed partitions automatically
 - Second-guess join strategies - AQE converts to optimal joins at runtime
