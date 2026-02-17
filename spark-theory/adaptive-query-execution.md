@@ -14,7 +14,7 @@ AQE delivers five major features that address the most common Spark performance 
 
 **The Problem:** You have `spark.sql.shuffle.partitions = 200` configured globally. You run a `groupBy("country")` aggregation on your dataset with 50 unique countries. After the shuffle completes, you end up with 200 partitions where only 50 contain data - the remaining 150 are completely empty. Even worse, each of those 50 partitions holding data is only ~2MB in size. Now 200 tasks are scheduled, but 150 do nothing and the other 50 finish in milliseconds, wasting scheduler resources.
 
-**AQE's Solution:** After the shuffle completes, AQE examines the actual partition sizes and **merges small contiguous partitions together** to hit a target size (default 64MB via `spark.sql.adaptive.advisoryPartitionSizeInBytes`). In this case, AQE would coalesce those 50 small partitions (2MB each = 100MB total) into ~2 optimally-sized partitions of ~50MB each.
+**How AQE solves this:** After the shuffle completes, AQE examines the actual partition sizes and **merges small contiguous partitions together** to hit a target size (default 64MB via `spark.sql.adaptive.advisoryPartitionSizeInBytes`). In this case, AQE would coalesce those 50 small partitions (2MB each = 100MB total) into ~2 optimally-sized partitions of ~50MB each.
 
 **Configuration:**
 ```python
@@ -24,9 +24,9 @@ spark.conf.set("spark.sql.adaptive.coalescePartitions.minPartitionSize", "1MB") 
 spark.conf.set("spark.sql.adaptive.coalescePartitions.parallelismFirst", "true")  # prioritize parallelism
 ```
 
-**Key Insight:** When `parallelismFirst` is true (default), Spark prioritizes maximizing parallelism over hitting the target size, only respecting the minimum 1MB threshold. Set this to false on busy clusters to improve resource utilization.
+>**Note:** When `parallelismFirst` is true (default), Spark prioritizes maximizing parallelism over hitting the target size, only respecting the minimum 1MB threshold. Set this to false on busy clusters to improve resource utilization.
 
-**Real Impact:** Instead of 200 small partitions, you get 5-10 partitions of reasonable size. Fewer tasks = less scheduling overhead = faster execution.
+**The result:** Instead of 200 small partitions, you get 5-10 partitions of reasonable size. Fewer tasks = less scheduling overhead = faster execution.
 
 ***
 
@@ -112,32 +112,6 @@ spark.conf.set("spark.sql.adaptive.forceOptimizeSkewedJoin", "false")  # force o
 
 You can see AQE in action in the Spark UI under the SQL tab - look for `Statistics(..., isRuntime=true)` in the plan details.
 
-***
-
-## Complete Configuration Reference
-
-| Configuration | Default | What It Does |
-|---|---|---|
-| **Master Switch** |
-| `spark.sql.adaptive.enabled` | `true` | Enable/disable all AQE features  |
-| **Coalescing Partitions** |
-| `spark.sql.adaptive.coalescePartitions.enabled` | `true` | Merge small partitions after shuffle  |
-| `spark.sql.adaptive.advisoryPartitionSizeInBytes` | `64MB` | Target partition size  |
-| `spark.sql.adaptive.coalescePartitions.minPartitionSize` | `1MB` | Minimum partition size  |
-| `spark.sql.adaptive.coalescePartitions.parallelismFirst` | `true` | Prioritize parallelism over target size  |
-| `spark.sql.adaptive.coalescePartitions.initialPartitionNum` | `None` | Initial partitions before coalescing  |
-| **Skew in Rebalance** |
-| `spark.sql.adaptive.optimizeSkewsInRebalancePartitions.enabled` | `true` | Split skewed partitions during rebalance  |
-| `spark.sql.adaptive.rebalancePartitionsSmallPartitionFactor` | `0.2` | Merge partitions < 20% of advisory size  |
-| **Join Conversions** |
-| `spark.sql.adaptive.autoBroadcastJoinThreshold` | Same as `autoBroadcastJoinThreshold` | Threshold for runtime broadcast conversion  |
-| `spark.sql.adaptive.localShuffleReader.enabled` | `true` | Enable local shuffle reads after conversion  |
-| `spark.sql.adaptive.maxShuffledHashJoinLocalMapThreshold` | `0` (disabled) | Convert to shuffled hash join if partitions < threshold  |
-| **Skew Joins** |
-| `spark.sql.adaptive.skewJoin.enabled` | `true` | Split skewed partitions in joins  |
-| `spark.sql.adaptive.skewJoin.skewedPartitionFactor` | `5.0` | Partition must be 5x median  |
-| `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes` | `256MB` | Partition must be > 256MB  |
-| `spark.sql.adaptive.forceOptimizeSkewedJoin` | `false` | Force optimization with extra shuffle  |
 ***
 
 ## Scenarios where AQE is beneficial:
