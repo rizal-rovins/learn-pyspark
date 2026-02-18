@@ -1,3 +1,21 @@
+## What Is a Join?
+
+A join combines rows from two tables based on a matching condition (e.g. `employee.dept_id = department.id`).  Think of it as a lookup - for each row on the left, find the related row(s) on the right and stitch them together.
+
+## Join Types
+
+These define **what rows you want back**:
+
+| Join Type | What You Get |
+|---|---|
+| **Inner** | Only rows with a match in *both* tables  |
+| **Left Outer** | All rows from left; NULLs where no right match  |
+| **Right Outer** | All rows from right; NULLs where no left match  |
+| **Full Outer** | All rows from both; NULLs on the unmatched side  |
+| **Cross** | Every combination of left × right (Cartesian product)  |
+| **Left Semi** | Only left rows that *have* a match on the right (no right columns returned)  |
+| **Left Anti** | Only left rows that *have no* match on the right - useful for finding records in one table which are not present in the other  |
+
 Spark offers multiple join strategies to handle different data scenarios. Understanding when and why Spark picks each strategy is critical for optimizing join performance - the wrong choice can turn a 5-minute query into a 2-hour nightmare.
 
 ## Why Join Strategy Matters
