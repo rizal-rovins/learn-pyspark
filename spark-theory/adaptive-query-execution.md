@@ -12,6 +12,8 @@ AQE delivers five major features that address the most common Spark performance 
 
 ### 1. Coalescing Post-Shuffle Partitions
 
+> **Coalesce** = reduce the number of partitions by merging neighboring ones in-place, with zero data movement across the network.
+
 **The Problem:** You have `spark.sql.shuffle.partitions = 200` configured globally. You run a `groupBy("country")` aggregation on your dataset with 50 unique countries. After the shuffle completes, you end up with 200 partitions where only 50 contain data - the remaining 150 are completely empty. Even worse, each of those 50 partitions holding data is only ~2MB in size. Now 200 tasks are scheduled, but 150 do nothing and the other 50 finish in milliseconds, wasting scheduler resources.
 
 **How AQE solves this:** After the shuffle completes, AQE examines the actual partition sizes and **merges small contiguous partitions together** to hit a target size (default 64MB via `spark.sql.adaptive.advisoryPartitionSizeInBytes`). In this case, AQE would coalesce those 50 small partitions (2MB each = 100MB total) into ~2 optimally-sized partitions of ~50MB each.
