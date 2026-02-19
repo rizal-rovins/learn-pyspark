@@ -8,7 +8,7 @@ When you hit "Run," Spark breaks that plan down into three physical units of exe
 
 Let’s break them down.
 
-### 1. The Job ( 1 Actions -> 1 Job)
+### 1. The Job (1 Action → 1 Job)
 A **Job** is the top-level unit. It represents a complete computation triggered by an **Action**.
 
 *   **Lazy Evaluation:** Remember, transformations (`select`, `filter`, `join`) are lazy. Nothing happens until you call an action.
