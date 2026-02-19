@@ -129,6 +129,8 @@ spark.conf.set("spark.sql.join.preferSortMergeJoin", "true")
 
 **How It Works:** For **non-equi joins** (joins without equality conditions like `df1.col > df2.col`) or **cross joins**, Spark uses nested loops. Each row from one side is compared to every row from the other side.
 
+>In this join algorithm, *shuffle* doesn't refer to a true shuffle because records with the same keys aren't sent to the same partition. Instead, the entire partition from both datasets are copied over the network. When the partitions from the datasets are available, a Nested Loop join is performed. If there are `X` number of records in the first dataset and `Y` number of records in the second dataset in each partition, each record in the second dataset is joined with every record in the first dataset. This continues in a loop `X × Y` times in every partition.
+
 **When Spark Uses It:**
 - Non-equi join conditions (`!=`, `>`, `<`, etc.)
 - Cross joins (no join condition)
