@@ -107,7 +107,7 @@ Here's what the flow would look like for this example -
 
 **Total Execution:** 1 Job, consisting of 2 Stages, launching 210 Tasks in total.
 
-## Interview Question - A `1TB` CSV file is read into Spark and aggregated by `country` to compute `total revenue`. How many jobs, stages, and tasks will Spark create?
+### Interview Question - A `1TB` CSV file is read into Spark and aggregated by `country` to compute `total revenue`. How many jobs, stages, and tasks will Spark create?
 
 Assuming standard Spark defaults (128 MB block size, 200 shuffle partitions) and that you trigger an action (like `write` or `collect`) with a pre-defined schema, the execution results in **1 Job, 2 Stages, and approximately 8,392 Tasks**. Let's try to understand how:
 
