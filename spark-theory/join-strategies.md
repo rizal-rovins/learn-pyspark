@@ -1,8 +1,6 @@
-## What Is a Join?
-
 A join combines rows from two tables based on a matching condition (e.g. `employee.dept_id = department.id`).  Think of it as a lookup - for each row on the left, find the related row(s) on the right and stitch them together.
 
-## Join Types
+### Join Types
 
 These define **what rows you want back**:
 
@@ -18,13 +16,13 @@ These define **what rows you want back**:
 
 Spark offers multiple join strategies to handle different data scenarios. Understanding when and why Spark picks each strategy is critical for optimizing join performance - the wrong choice can turn a 5-minute query into a 2-hour nightmare.
 
-## Why Join Strategy Matters
+### Why Join Strategy Matters
 
 A join between two DataFrames can execute in vastly different ways depending on data sizes, available memory, and join keys. Spark's optimizer automatically selects a strategy, but you can override it using **join hints** when you know your data better than the optimizer does.
 
 The four main join strategies are:
 
-## 1. Broadcast Hash Join (BHJ)
+### 1. Broadcast Hash Join (BHJ)
 
 **How It Works:** Spark takes the smaller table, broadcasts (copies) it to **every executor** in the cluster, then builds an in-memory hash table on each executor. The larger table stays partitioned, and each executor performs a local hash lookup to find matches.
 
@@ -59,7 +57,7 @@ large_df.join(broadcast(small_df), "user_id")
 
 ***
 
-## 2. Shuffle Hash Join (SHJ)
+### 2. Shuffle Hash Join (SHJ)
 
 **How It Works:** Both tables are **shuffled** based on the join key, so rows with the same key land on the same partition. Spark then builds an in-memory hash table from the **smaller side** of each partition and probes it with rows from the larger side.
 
@@ -94,7 +92,7 @@ spark.conf.set("spark.sql.adaptive.maxShuffledHashJoinLocalMapThreshold", "64MB"
 
 ***
 
-## 3. Sort-Merge Join (SMJ)
+### 3. Sort-Merge Join (SMJ)
 
 **How It Works:** Both tables are **shuffled** by join key and then **sorted** within each partition. Spark then performs a merge scan (like merging two sorted arrays) to find matching rows.
 
@@ -127,7 +125,7 @@ spark.conf.set("spark.sql.join.preferSortMergeJoin", "true")
 
 ***
 
-## 4. Shuffle-and-Replicate Nested Loop Join (Cartesian Join)
+### 4. Shuffle-and-Replicate Nested Loop Join (Cartesian Join)
 
 **How It Works:** For **non-equi joins** (joins without equality conditions like `df1.col > df2.col`) or **cross joins**, Spark uses nested loops. Each row from one side is compared to every row from the other side.
 
@@ -153,7 +151,7 @@ df1.join(df2.hint("SHUFFLE_REPLICATE_NL"), df1.id > df2.id)
 
 ***
 
-## Join Strategy Priority
+### Join Strategy Priority
 
 When you specify multiple hints, Spark follows this priority order:
 
@@ -172,7 +170,7 @@ If both sides have the same hint (e.g., both have `BROADCAST`), Spark picks the 
 
 ***
 
-## Join Strategy Comparison
+### Join Strategy Comparison
 
 | Strategy | Shuffle Required | Memory Usage | Best For | Risk |
 |---|---|---|---|---|
@@ -183,7 +181,7 @@ If both sides have the same hint (e.g., both have `BROADCAST`), Spark picks the 
 
 ***
 
-## Practical Decision Tree
+### Practical Decision Tree
 
 ```
 Is one table < 10MB?
@@ -197,7 +195,7 @@ Is one table < 10MB?
 
 ***
 
-## Real-World Example
+### Real-World Example
 
 ```python
 # Scenario: 10GB transactions table joining 50MB users table
@@ -224,7 +222,7 @@ result = sales.join(products.hint("SHUFFLE_HASH"), "product_id")
 
 ***
 
-## Configuration Summary
+### Configuration Summary
 
 | Configuration | Default | Impact |
 |---|---|---|
@@ -234,7 +232,7 @@ result = sales.join(products.hint("SHUFFLE_HASH"), "product_id")
 
 ***
 
-## Tips for Optimization
+### Tips for Optimization
 
 1. **Profile your joins:** Check the Spark UI SQL tab to see which strategy was chosen and why
 2. **Use statistics:** Run `ANALYZE TABLE` to help Spark make better decisions
@@ -244,7 +242,7 @@ result = sales.join(products.hint("SHUFFLE_HASH"), "product_id")
 
 ***
 
-## The Bottom Line
+### The Bottom Line
 
 Spark's join strategy selection is usually smart, but not perfect. When joining small dimension tables with large fact tables, **always consider broadcast hints**. For large-to-large joins, trust the default sort-merge join unless you have evidence that shuffle hash would be faster. And remember: **AQE can dynamically convert sort-merge to broadcast joins at runtime** if it detects a small table after filtering.
 
