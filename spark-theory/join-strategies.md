@@ -244,7 +244,7 @@ result = sales.join(products.hint("SHUFFLE_HASH"), "product_id")
 
 ***
 
-### The Bottom Line
+### Summary
 
 Spark's join strategy selection is usually smart, but not perfect. When joining small dimension tables with large fact tables, **always consider broadcast hints**. For large-to-large joins, trust the default sort-merge join unless you have evidence that shuffle hash would be faster. And remember: **AQE can dynamically convert sort-merge to broadcast joins at runtime** if it detects a small table after filtering.
 
