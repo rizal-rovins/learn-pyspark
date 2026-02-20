@@ -1,12 +1,12 @@
 Adaptive Query Execution lets Spark re-optimize your query **while it's running** based on what it actually sees in your data, not just pre-execution guesses. Enabled by default since Spark 3.2.0, AQE adjusts query plans on the fly using real runtime statistics.
 
-## Why AQE Matters
+### Why AQE Matters
 
 Traditional query optimizers make all decisions **before** execution starts, relying on statistics that can be outdated, missing, or just plain wrong. AQE changes this behaviour: it observes what's actually happening during execution and adjusts the plan dynamically.
 
 *Think of it like GPS navigation that reroutes you based on live traffic, rather than sticking to a route planned hours ago.*
 
-## The Five Core Optimizations
+### The Five Core Optimizations
 
 AQE delivers five major features that address the most common Spark performance bottlenecks:
 
@@ -105,7 +105,7 @@ spark.conf.set("spark.sql.adaptive.forceOptimizeSkewedJoin", "false")  # force o
 
 ***
 
-## How AQE Works Under the Hood
+### How AQE Works Under the Hood
 
 1. **Query Plan Created:** Spark builds the initial execution plan using catalog statistics or educated guesses
 2. **Stage Execution:** Spark starts executing stages and collects **runtime statistics** (actual row counts, data sizes, partition distributions)
@@ -116,7 +116,7 @@ You can see AQE in action in the Spark UI under the SQL tab - look for `Statisti
 
 ***
 
-## Scenarios where AQE is beneficial:
+### Scenarios where AQE is beneficial:
 
 1. **Wide transformations with unpredictable outputs:** Filters that drastically reduce data size, joins with unknown cardinality
 2. **Data skew scenarios:** Aggregations or joins on non-uniform keys (city, product_id, user_id)
@@ -126,7 +126,7 @@ You can see AQE in action in the Spark UI under the SQL tab - look for `Statisti
 
 ***
 
-## Scenarios where AQE is NOT beneficial:
+### Scenarios where AQE is NOT beneficial:
 
 1. **Narrow transformations only:** If your query is just `select().filter()`, there's nothing to re-optimize
 2. **Single-stage queries:** No shuffle = no runtime statistics to leverage
@@ -135,7 +135,7 @@ You can see AQE in action in the Spark UI under the SQL tab - look for `Statisti
 
 ***
 
-## Practical Example
+### Practical Example
 
 ```python
 # Scenario: Join a large table (10GB) with a small table (estimated 50MB, actually 8MB)
@@ -159,7 +159,7 @@ result = large_df.join(small_df, "user_id")
 
 ***
 
-## The Bottom Line
+## Summary
 
 AQE turns Spark into a dynamic optimizer that adjusts your query based on what it actually sees in your data at runtime. You no longer need to:
 - Perfectly tune `spark.sql.shuffle.partitions` for every query - AQE coalesces dynamically
