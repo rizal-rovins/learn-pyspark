@@ -1,5 +1,3 @@
-## Row and Columnar File Formats in Spark
-
 Not all file formats are created equal. The one you choose determines how much data Spark reads from disk, how tightly it compresses, and how fast your queries run. A bad choice here can quietly cost you **10x in query time and storage**.
 
 ***
@@ -98,7 +96,7 @@ Avro files are **appendable**. You can write row-by-row as events arrive — per
 
 ***
 
-### Parquet — The Analytical Workhorse
+## Parquet — Built for Analytics
 
 > **Parquet** = columnar binary format with embedded statistics, nested type support, and excellent compression. The default format for Spark.
 
@@ -188,7 +186,9 @@ With row-based formats (CSV/Avro), step 1 and step 2 are both impossible — Spa
 
 ### Schema Evolution
 
-One area where formats diverge sharply — what happens when your schema changes:
+>**What is schema evolution?** Real pipelines change over time — new columns get added, old ones get dropped, types get updated. Schema evolution is a format's ability to handle these changes without breaking existing files or readers. Not all formats handle this equally well.
+
+Here is how each format deals with schema changes:
 
 **Avro** — schema evolution is a first-class feature.  Adding a field with a default value, renaming via aliases, or removing optional fields all work without rewriting data.
 
@@ -205,9 +205,6 @@ One area where formats diverge sharply — what happens when your schema changes
 - **Partition pruning** skips entire folders. **Predicate pushdown** skips row groups *inside* the remaining files. Used together, they're multiplicative.
 - **AQE's broadcast join conversion** benefits from Parquet/ORC because accurate row group statistics give AQE better runtime size estimates to decide whether to broadcast.
 - **Bucketed tables** written as Parquet benefit from both column skipping and bucket co-location — the combination eliminates shuffle *and* minimizes I/O per executor.
-
-***
-Here's the table without emojis:
 
 ***
 
