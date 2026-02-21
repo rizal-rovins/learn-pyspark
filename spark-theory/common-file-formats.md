@@ -12,7 +12,7 @@ Every file format answers one fundamental question differently: **do you store d
 
 This layout difference is the root cause of every performance gap between formats.
 
-Row format saves rows line by line (like a `.csv`), while columnar format saves each column as its own separate block. When your query only touches 3 of 100 columns, columnar format does 97% less I/O.
+Row format saves rows line by line (like a `.csv`), while columnar format saves each column as its own separate block. When your query only touches 3 of 100 columns, columnar format does 97% less I/O (skips 97 columns entirely. Yes, its a simplification. In reality the saving depends on the actual byte size of each column).
 
 Imagine you have a table with 6 rows and 4 columns — `user_id`, `country`, `amount`, `timestamp`.
 
@@ -133,7 +133,7 @@ Parquet also supports **nested structures** (arrays, maps, structs) in columnar 
 
 ***
 
-### ORC — Parquet's Highly Compressed Cousin
+### ORC (Optimized Row Columnar Format)
 
 > **ORC** (Optimized Row Columnar) = columnar format with stripe-level indexes, bloom filters, and superior compression. Hive's native format.
 
@@ -145,7 +145,7 @@ df.write.orc("output/")
 
 ORC organizes data into **stripes** (default 64MB). Each stripe contains an **index** with min/max statistics, and optionally **bloom filters** — hash-based structures that let Spark answer "does this stripe contain the value `user_id = 'abc123'`?" without reading the stripe.
 
-**ORC vs Parquet — the key differences:**
+**Differences between Parquet & ORC:**
 
 | | **Parquet** | **ORC** |
 |---|---|---|
@@ -180,13 +180,13 @@ result = transactions.filter("region = 'IN' AND amount > 50000") \
 # Result: Spark reads maybe 5% of the 500GB file
 ```
 
-With row-based formats (CSV/Avro), step 1 and step 2 are both impossible — Spark reads 100% of the data.
+With row-based formats (CSV/Avro), step 1 and step 2 are both impossible. Spark needs to read 100% of the data into memory and then drop columns and filter rows.
 
 ***
 
 ### Schema Evolution
 
->**What is schema evolution?** Real pipelines change over time — new columns get added, old ones get dropped, types get updated. Schema evolution is a format's ability to handle these changes without breaking existing files or readers. Not all formats handle this equally well.
+>**What is schema evolution?** Real pipelines change over time: new columns get added, old ones get dropped, types get updated. Schema evolution is a format's ability to handle these changes without breaking existing files or readers. Not all formats handle this equally well.
 
 Here is how each format deals with schema changes:
 
