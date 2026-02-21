@@ -38,6 +38,11 @@ Each column lives in its own block. A query on `amount` only reads that one bloc
 
 > **Run-Length Encoding (RLE).** Because all values for a column are stored together, repeated values compress extremely well. The `country` column above has `India` appearing 3 times. Therefore, instead of storing it 3 times, columnar formats encode it as `India × 3`. The more repetition in your data (status fields, country codes, boolean flags), the more aggressively it compresses. This is why columnar formats achieve 80–95% size reduction over raw CSV. This is something row formats simply can't match, since similar values are scattered across different rows rather than grouped together.
 
+Here's a neat representation. [Source](https://www.datacadamia.com/_media/data/type/relation/structure/columnar_physical_table_representation.png?fetcher=raw&tseed=1725012531)
+
+![Row and Columnar Layout](/images/row-and-columnar-layout.png)
+
+
 ***
 
 ### Why It Matters in Spark
