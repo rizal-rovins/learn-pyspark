@@ -1,4 +1,4 @@
-Two of the most powerful — and most misunderstood — storage optimization techniques in Spark. Both reduce shuffle. Both improve query performance. But they solve **different problems**, and using the wrong one can make things worse.
+Partitioning and Bucketing are two of Spark's most effective storage optimizations. Both cut down unnecessary data reads. Both speed up queries. But they work in completely different ways and mixing them up can hurt more than help.
 
 Let's break them down.
 
@@ -34,19 +34,15 @@ When a query filters on `country = 'IN'`, Spark reads **only** the `country=IN/`
 
 ### How Partitioning Works Internally
 
-Spark uses the `.partitionBy()` method of the `DataFrameWriter` class.  Each partition folder can hold multiple Parquet/ORC files — the number of files per folder is controlled by `spark.sql.shuffle.partitions`.
+Spark uses the `.partitionBy()` method of the `DataFrameWriter` class.  Each partition folder can hold multiple Parquet/ORC files.
+
+The number of files written inside each partition folder equals the **number of in-memory partitions (tasks) that contain data for that partition value** at the time of writing.
+
+So if your DataFrame has 200 in-memory partitions and 5 of them contain rows where `country = 'IN'`, you get **5 files** inside the `country=IN/` folder - one file per task that wrote to it.
 
 **The Problem it Solves:**
 
 You have 10TB of sales data and your analysts always filter by `region`. Without partitioning, every query scans the full 10TB. With partitioning by `region`, a query for `region = 'APAC'` reads only ~2TB — an 80% I/O reduction.
-
-**Configuration to know:**
-```python
-# Controls how many files land inside each partition folder after a shuffle
-spark.conf.set("spark.sql.shuffle.partitions", "200")  # default
-
-# Avoid tiny files — aim for ~128MB per file inside each partition
-```
 
 ***
 
@@ -55,6 +51,8 @@ spark.conf.set("spark.sql.shuffle.partitions", "200")  # default
 > **Watch out:** partitioning on a **high-cardinality column** (like `user_id` or `timestamp`) creates thousands of tiny folders — each with tiny files. This destroys performance.
 
 **Rule of thumb:** Partition on columns with **low-to-medium cardinality** — `date`, `country`, `region`, `status`.
+
+> **What is cardinality?** Cardinality is simply the number of distinct values in a column. A `country` column with 50 unique values is **low cardinality**. A `user_id` column with 10 million unique values is **high cardinality**. For partitioning, low cardinality is good because it creates a manageable number of folders. High cardinality creates thousands of tiny folders, which kills performance.
 
 If a partition column has 10,000 unique values, you end up with 10,000 folders. Reading metadata for that many directories kills the NameNode (HDFS) or S3 LIST operations. Stick to columns where the number of distinct values is in the **tens to low hundreds**.
 
@@ -118,27 +116,7 @@ This pattern is widely used in Lakehouse architectures for large fact tables.
 
 ***
 
-### repartition() vs coalesce() — In-Memory Partitioning
-
-Beyond disk-level partitioning, Spark also has **in-memory partition control** during computation:
-
-```python
-# repartition() — full shuffle, can increase OR decrease partitions
-# Use when: you want to rebalance skewed data or partition by a new key
-df = df.repartition(100, "user_id")
-
-# coalesce() — no shuffle, only reduces partitions by merging neighbors
-# Use when: you want to reduce small partitions before writing
-df = df.coalesce(10)
-```
-
-> **coalesce** = reduce partitions with zero data movement across the network (same as AQE's post-shuffle coalescing). `repartition` = full shuffle, balanced output.
-
-Use `repartition()` before a join to pre-align data. Use `coalesce()` before writing to avoid small files.
-
-***
-
-### Partitioning vs Bucketing — At a Glance
+### Partitioning vs Bucketing
 
 | | **Partitioning** | **Bucketing** |
 |---|---|---|
@@ -151,19 +129,16 @@ Use `repartition()` before a join to pre-align data. Use `coalesce()` before wri
 | **Requires table?** | No (works with file writes) | Yes (Hive/Spark managed table) |
 | **Pitfall** | Too many small files if high-cardinality | Wrong N buckets → uneven distribution |
 
-
-
 ***
 
 ### Choosing the Right N for Buckets
 
-**The Problem:** If you choose too few buckets, each bucket file is huge — defeating the purpose. Too many, and you're back to the small file problem.
+**The Problem:** If you choose too few buckets, each bucket file is huge which defeats the purpose. Too many, and you're back to the small file problem.
 
 **Rule of thumb:**
 - Target **128MB–256MB per bucket file**
 - Formula: `N = total_data_size / target_bucket_size`
 - For a 100GB table targeting 200MB per bucket: `N = 100GB / 200MB = 500 buckets`
-- Always use **powers of 2** (8, 16, 32, 64...) — makes co-location between tables predictable when you join them
 
 Both joined tables must use the **exact same N** for shuffle elimination to kick in. If table A has 16 buckets and table B has 32, Spark will still shuffle.
 
@@ -228,10 +203,9 @@ Think of partitioning and bucketing as **proactive optimization** (you set it up
 
 ***
 
-### Key Takeaways
+### Summary
 
 - **Partition** on low-cardinality columns for fast filtering. Avoid high-cardinality partition columns — they cause small file problems.
 - **Bucket** on high-cardinality join keys to eliminate shuffle between large tables. Both tables must use the same column and same N.
 - **Combine both** for large fact tables: `partitionBy("date").bucketBy(N, "user_id")`.
-- `repartition()` reshuffles in-memory; `coalesce()` merges without shuffle — use each for the right job.
 - Bucketing requires Spark/Hive managed tables — it doesn't work with raw `.parquet()` writes.
