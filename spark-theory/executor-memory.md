@@ -16,7 +16,7 @@ This is a critical distinction: `spark.executor.memory` controls only the **on-h
 
 Here is the full breakdown, with each block tied to its configuration property:
 
-![Spark Executor Memory Layout](./images/executor-memory.png)
+![Spark Executor Memory Layout](/images/executor-memory.png)
 
 | Memory Region | Configuration Property | Default | Description |
 | :--- | :--- | :--- | :--- |
