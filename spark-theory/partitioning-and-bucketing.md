@@ -34,7 +34,19 @@ When a query filters on `country = 'IN'`, Spark reads **only** the `country=IN/`
 
 ### How Partitioning Works Internally
 
-Spark uses the `.partitionBy()` method of the `DataFrameWriter` class.  Each partition folder can hold multiple Parquet/ORC files.
+Spark uses the `.partitionBy()` method of the `DataFrameWriter` class. Each partition folder can hold multiple files and this applies to **any format Spark supports**, not just Parquet or ORC.
+
+Whether you're writing CSV, JSON, Avro, Delta, or Parquet, the folder structure stays the same:
+
+```
+/output/
+  country=IN/
+    part-00000.csv   ← or .json, .parquet, .orc, .avro ...
+  country=US/
+    part-00000.csv
+```
+
+Parquet and ORC are the most *commonly paired* formats with `partitionBy()` because they're columnar and benefit the most from partition pruning at read time. The partitioning mechanism itself is purely a **filesystem-level concept**, completely independent of the file format inside the folders.
 
 The number of files written inside each partition folder equals the **number of in-memory partitions (tasks) that contain data for that partition value** at the time of writing.
 
@@ -42,7 +54,7 @@ So if your DataFrame has 200 in-memory partitions and 5 of them contain rows whe
 
 **The Problem it Solves:**
 
-You have 10TB of sales data and your analysts always filter by `region`. Without partitioning, every query scans the full 10TB. With partitioning by `region`, a query for `region = 'APAC'` reads only ~2TB — an 80% I/O reduction.
+You have 10TB of sales data and your analysts always filter by `region`. Without partitioning, every query scans the full 10TB. With partitioning by `region`, a query for `region = 'APAC'` reads only ~2TB which is an 80% I/O reduction.
 
 ***
 
@@ -94,6 +106,18 @@ orders_df.join(users_df, "user_id")
 ```
 
 Each executor reads its corresponding bucket files from both tables and joins them locally.  This can improve join performance by **10x or more** on large datasets.
+
+Here's an example showing how the hashing works:
+
+| user_id | hash(user_id) - for example | hash % 8 | Bucket File |
+|---|---|---|---|
+| U101 | 388 | 388 % 8 = **4** | bucket-4 |
+| U202 | 521 | 521 % 8 = **1** | bucket-1 |
+| U303 | 712 | 712 % 8 = **0** | bucket-0 |
+| U404 | 835 | 835 % 8 = **3** | bucket-3 |
+| U505 | 960 | 960 % 8 = **0** | bucket-0 |
+
+When you join `orders` and `users` on `user_id`, Spark knows that **U303 and U505 from both tables will always land in bucket-0** — so it only needs to join bucket-0 with bucket-0, bucket-1 with bucket-1, and so on. No shuffle needed.
 
 ***
 
@@ -193,8 +217,6 @@ result = spark.table("orders") \
 
 ### How It Interacts with AQE
 
-Bucketing and AQE work together — but with a nuance:
-
 - If two tables are **properly bucketed** (same column, same N), AQE's sort-merge → broadcast join conversion is **skipped**, since Spark already knows no shuffle is needed.
 - If bucketing is **mismatched** (different N), AQE still kicks in and tries to optimize the resulting sort-merge join dynamically.
 - Partition pruning from `.partitionBy()` reduces the data AQE has to work with — **less data = better AQE statistics = smarter decisions**.
@@ -205,7 +227,7 @@ Think of partitioning and bucketing as **proactive optimization** (you set it up
 
 ### Summary
 
-- **Partition** on low-cardinality columns for fast filtering. Avoid high-cardinality partition columns — they cause small file problems.
+- **Partition** on low-cardinality columns for fast filtering. Avoid high-cardinality partition columns because they cause small file problems.
 - **Bucket** on high-cardinality join keys to eliminate shuffle between large tables. Both tables must use the same column and same N.
 - **Combine both** for large fact tables: `partitionBy("date").bucketBy(N, "user_id")`.
 - Bucketing requires Spark/Hive managed tables — it doesn't work with raw `.parquet()` writes.
