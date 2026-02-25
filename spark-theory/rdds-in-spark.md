@@ -32,10 +32,40 @@ For example, with RDDs you manually specify "filter these tuples, then map this 
 ### 1. Immutability
 Once you create an RDD, you cannot change it. To modify data, you must apply a transformation (like `map` or `filter`) to create a *new* RDD. This immutability is key to Spark's fault tolerance.
 
-### 2. In-Memory Computation
+### 2. Fault Tolerance
+RDDs track their entire history of transformations in a **lineage graph**. If a partition is lost due to an executor failure, Spark doesn't need to recompute everything from scratch - it replays only the lost partition's lineage to rebuild it.
+
+This is what makes RDDs resilient *by design*, not by replication. Unlike databases that copy data to recover from failures, RDDs recover by **recomputing** from the original source using the recorded lineage.
+
+```python
+# Each transformation adds a step to the lineage
+raw_rdd = sc.textFile("s3://my-bucket/logs/")        # Step 1: read
+filtered_rdd = raw_rdd.filter(lambda x: "ERROR" in x) # Step 2: filter
+parsed_rdd = filtered_rdd.map(lambda x: x.split(",")) # Step 3: map
+
+# If a partition of parsed_rdd is lost, Spark replays:
+# textFile → filter → map — only for that partition
+# No data replication needed. Lineage IS the recovery plan.
+
+parsed_rdd.count()  # Action — triggers execution
+```
+
+You can inspect the lineage yourself with:
+
+```python
+print(parsed_rdd.toDebugString())
+# (2) PythonRDD[3]
+#  |  MappedRDD[2]
+#  |  FilteredRDD[1]
+#  |  s3://my-bucket/logs/ (textFile)
+```
+
+The deeper the lineage, the more work Spark needs to redo on failure. For long chains, use `.cache()` or `.checkpoint()` to cut the lineage short and avoid recomputing everything from the source.
+
+### 3. In-Memory Computation
 RDDs store data in memory (RAM) across executors. This is what makes Spark 10x-100x faster than MapReduce, which writes to disk after every step.
 
-### 3. Lazy Evaluation
+### 4. Lazy Evaluation
 Just like DataFrames, RDDs are lazy. They don't load or process data until an **Action** (like `count()` or `collect()`) is called.
 
 ## Creating RDDs
