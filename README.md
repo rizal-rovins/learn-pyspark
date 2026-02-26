@@ -15,9 +15,28 @@ Each tutorial is structured in a Markdown file and focuses on a single topic, fr
 
 ---
 
-## Tutorials Available
+### Spark Theory
 
-### Beginner Tutorials
+| Title | Description |
+|-------|-------------|
+| [Introduction to Spark](./spark-theory/introduction-to-spark.md) | Learn Spark’s origins, motivations, and where it fits in the big data ecosystem. |
+| [Spark Architecture](./spark-theory/spark-architecture.md) | Understand the high-level architecture of Spark: driver, executors, cluster manager. |
+| [RDDs in Spark](./spark-theory/rdds-in-spark.md) | Explore Resilient Distributed Datasets and their core properties. |
+| [DataFrames & Datasets](./spark-theory/dataframes-datasets.md) | Learn how Spark SQL builds on RDDs with optimized, structured APIs. |
+| [Transformations & Actions](./spark-theory/transformations-actions.md) | Distinguish between lazy transformations and actions in Spark. |
+| [Lazy Evaluation & DAG](./spark-theory/lazy-evaluation-dag.md) | See how Spark builds and optimizes the DAG before execution. |
+| [Jobs, Stages & Tasks](./spark-theory/jobs-stages-tasks.md) | Break down how Spark splits work into jobs, stages, and tasks. |
+| [Join Strategies](./spark-theory/join-strategies.md) | Understand broadcast, shuffle, and other join strategies in Spark. |
+| [Catalyst Optimizer](./spark-theory/catalyst-optimizer.md) | Discover how Spark’s Catalyst optimizer rewrites and optimizes queries. |
+| [Adaptive Query Execution](./spark-theory/adaptive-query-execution.md) | See how Spark adapts query plans at runtime for better performance. |
+| [Common File Formats](./spark-theory/common-file-formats.md) | Compare CSV, JSON, Parquet, and other formats in the context of Spark. |
+| [Partitioning & Bucketing](./spark-theory/partitioning-and-bucketing.md) | Learn how data partitioning and bucketing affect performance. |
+| [Repartition & Coalesce](./spark-theory/repartition-and-coalesce.md) | Control the number of partitions efficiently using repartition and coalesce. |
+| [Executor Memory](./spark-theory/executor-memory.md) | Dive into executor memory layout and how it impacts jobs. |
+
+---
+
+### PySpark Beginner Tutorials
 
 | Title | Description |
 |-------|-------------|
@@ -33,7 +52,7 @@ Each tutorial is structured in a Markdown file and focuses on a single topic, fr
 | [Joining Data](./tutorials/joining-data.md) | Combine multiple datasets using joins. |
 | [Handling Nulls & Missing Data](./tutorials/handling-nulls.md) | Clean and transform missing data. |
 
-### Advanced Tutorials
+### PySpark Advanced Tutorials
 
 | Title | Description |
 |-------|-------------|
