@@ -27,9 +27,34 @@ To read a JSON file, use `spark.read.json()`. PySpark allows you to configure mu
 For basic JSON files, simply specify the file path:
 
 ```python
-# Basic JSON read
+# Default read: each line must be a separate JSON object
+# { "id": 1, "name": "Alice" }
+# { "id": 2, "name": "Bob" }
 df = spark.read.json("/path/to/your/data.json")
 df.show(5)
+```
+
+For regular multi-line JSON files, set the **multiLine** option to True. This was introduced in Spark 2.2.
+
+```python
+# multiline.json: a pretty-printed JSON array
+# [
+#   { "id": 1, 
+#     "name": "Alice", 
+#     "dept": "Engineering" 
+#   },
+#   { "id": 2, 
+#     "name": "Bob",
+#     "dept": "Finance"
+#   }
+# ]
+
+df = spark.read \
+    .option("multiLine", True) \
+    .json("/path/to/multiline.json")
+
+df.show()
+
 ```
 
 #### Common JSON Reading Options
