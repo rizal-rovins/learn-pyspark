@@ -191,6 +191,18 @@ If you see one partition with 10x the rows of others, use `repartition()` — no
 
 ***
 
+### How do you know partitions are too many or too few?
+
+In Spark (including Databricks), deciding whether you have too many or too few partitions mainly depends on the size of the dataset, the size of each partition, and the cluster’s parallel processing capacity. A widely used rule in production systems is that an ideal partition size should be around 128 MB to 256 MB. This range provides a balance between efficient parallel processing and manageable memory usage. If partitions are too small, Spark creates too many tasks, which leads to high scheduling overhead, JVM task management overhead, and excessive metadata during shuffles. On the other hand, if partitions are too large, each task processes too much data, which can cause memory pressure on executors, longer task times, and reduced parallelism.
+
+For example, suppose you have a 10 GB dataset. If we aim for approximately 128 MB per partition, the ideal number of partitions would be around 10 GB ÷ 128 MB ≈ 80 partitions. If the dataset instead has 2000 partitions, then each partition is only about 5 MB, which means Spark must schedule 2000 tasks. This results in unnecessary overhead and the well-known “small files problem.” Conversely, if the dataset has only 5 partitions, then each partition is about 2 GB, which means only five tasks can run in parallel. In a cluster with many cores, most executors will remain idle, causing inefficient resource utilization and slower processing.
+
+Another practical way to identify partition issues is by examining the Spark UI. In the Stages → Tasks section, you can see how many tasks were created for a stage. For instance, if your cluster has 32 executors (or cores) but the stage shows only 4 tasks, then only four cores are doing work while the remaining resources stay idle. This indicates too few partitions and insufficient parallelism. In contrast, if the stage shows something like 50,000 tasks, Spark spends a significant amount of time scheduling tasks and managing overhead rather than actually processing data. This usually indicates too many partitions.
+
+A real-world example can be seen in Databricks pipelines. Imagine processing 500 GB of clickstream data. By default, Spark often uses spark.sql.shuffle.partitions = 200 for shuffle operations. This would result in each partition holding 500 GB ÷ 200 = 2.5 GB, which is far larger than the recommended 128–256 MB range. Such large partitions can slow down tasks and increase memory pressure. A better approach would be to calculate the required partitions using the target partition size. If we aim for 200 MB per partition, we get 500 GB ÷ 200 MB ≈ 2500 partitions. In this case, engineers would redistribute the data using:
+
+***
+
 ### Practical Example: End-to-End Pipeline
 
 ```python
