@@ -191,9 +191,13 @@ If you see one partition with 10x the rows of others, use `repartition()` — no
 
 ***
 
-### How do you know partitions are too many or too few?
 
-In Spark (including Databricks), deciding whether you have too many or too few partitions mainly depends on the size of the dataset, the size of each partition, and the cluster’s parallel processing capacity. A widely used rule in production systems is that an ideal partition size should be around 128 MB to 256 MB. This range provides a balance between efficient parallel processing and manageable memory usage. If partitions are too small, Spark creates too many tasks, which leads to high scheduling overhead, JVM task management overhead, and excessive metadata during shuffles. On the other hand, if partitions are too large, each task processes too much data, which can cause memory pressure on executors, longer task times, and reduced parallelism.
+### How to Identify If Spark Partitions Are Too Many or Too Few
+
+In **Spark (including Databricks)**, the number of partitions should be based on **dataset size, partition size, and cluster parallelism**. A common production guideline is to keep **partition sizes between 128 MB and 256 MB**. This range balances efficient parallel processing and manageable memory usage.
+
+- **Too many partitions** → very small partitions, leading to **high task scheduling overhead, JVM overhead, and the small files problem**.
+- **Too few partitions** → very large partitions, causing **memory pressure, long-running tasks, and poor parallelism**.
 
 For example, suppose you have a 10 GB dataset. If we aim for approximately 128 MB per partition, the ideal number of partitions would be around 10 GB ÷ 128 MB ≈ 80 partitions. If the dataset instead has 2000 partitions, then each partition is only about 5 MB, which means Spark must schedule 2000 tasks. This results in unnecessary overhead and the well-known “small files problem.” Conversely, if the dataset has only 5 partitions, then each partition is about 2 GB, which means only five tasks can run in parallel. In a cluster with many cores, most executors will remain idle, causing inefficient resource utilization and slower processing.
 
