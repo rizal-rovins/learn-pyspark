@@ -71,6 +71,13 @@ Spark computes a minimal merge that combines nearby partitions. Some partitions 
 
 ***
 
+### How to Identify If Spark Partitions Are Too Many or Too Few
+In Spark (including Databricks), the number of partitions should be based on dataset size, partition size, and cluster parallelism. A common production guideline is to keep partition sizes between 128 MB and 256 MB. This range balances efficient parallel processing and manageable memory usage.
+
+Too many partitions → very small partitions, leading to high task scheduling overhead, JVM overhead, and the small files problem.
+Too few partitions → very large partitions, causing memory pressure, long-running tasks, and poor parallelism.
+
+
 ### The Shuffle Difference, Visualized
 
 **Before:** 8 partitions spread across 4 executors
@@ -188,6 +195,7 @@ If you see one partition with 10x the rows of others, use `repartition()` — no
 - You want to route rows by column using `.repartition(n, "col")`
 
 **Common mistake:** Using `repartition()` right before writing output "just to be safe." If your data is already balanced, you're paying full shuffle cost for no benefit. Use `coalesce()` instead.
+
 
 ***
 
