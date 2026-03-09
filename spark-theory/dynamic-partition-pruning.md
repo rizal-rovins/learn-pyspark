@@ -32,7 +32,7 @@ Spark can't know which `product_id` partitions to skip until it evaluates `produ
 
 ***
 
-### The Star Schema Problem DPP Solves
+### What Problem Does DPP Solve?
 
 DPP was introduced in **Spark 3.0** and is designed specifically for **star schema** patterns: one large fact table joined with smaller dimension tables.
 
