@@ -7,6 +7,7 @@
 This is what separates DPP from static partition pruning. With static pruning, Spark skips partitions at *parse time* because the filter value is hardcoded in the query:
 
 ```python
+# Assume orders_df is partitioned by product_id
 # Static Pruning: Spark knows at parse time to read only the partitions where product_id in (p1, p2, p3)
 orders_df.filter("product_id in ('p1','p2','p3')")
 ```
@@ -14,6 +15,7 @@ orders_df.filter("product_id in ('p1','p2','p3')")
 With DPP, the pruning condition isn't known until *runtime* because it's derived from another table's filtered result:
 
 ```python
+# Assume orders_df is partitioned by product_id
 # Dynamic Pruning: the partition filter comes from joining the dimension table
 orders_df.join(products_df.filter("category = 'electronics'"), "product_id")
 
@@ -42,12 +44,12 @@ fact_orders (partitioned by product_id) ← full scan, 10TB
 products (filtered: category = 'Electronics') ← small, 10MB
 ```
 
-Spark would scan the entire `fact_orders` table even though only some of the Electronics category partition is relevant.
+Spark reads the whole `fact_orders` table even though only the partitions containing Electronics products are needed.
 
 With DPP, Spark automatically:
 1. Scans and filters the small `products` table first (gets all `product_id` for category = 'Electronics')
 2. Broadcasts the result as a hash table
-3. **Reuses that same broadcast** as a `PartitionFilter` on `fact_orders` : scanning only the matching partition
+3. **Reuses that same broadcast** as a `PartitionFilter` on `fact_orders` : scanning only the matching partitions
 
 ***
 
@@ -58,7 +60,7 @@ DPP is implemented through two rules inside the Spark SQL engine:
 - **`PartitionPruning`** — a logical plan optimizer rule that detects when a join filter can be pushed down to prune the other side's partitions
 - **`PlanDynamicPruningFilters`** — a physical planner rule that wires the broadcast result into the partition scan
 
-The key insight: **Spark reuses the BroadcastExchange** that was already computed for the join. It doesn't scan the dimension table twice. The same broadcast hash table that eliminates shuffle *also* acts as the partition filter.
+The key insight: **Spark reuses the BroadcastExchange** that was already computed for the join (Refer Broadcast Joins in Join Strategies post). It doesn't scan the dimension table twice. The same broadcast hash table that eliminates shuffle *also* acts as the partition filter.
 
 You can confirm DPP is firing using `EXPLAIN`:
 
@@ -80,15 +82,13 @@ FileScan parquet [product_id]
 
 ### The 3 Conditions for DPP to Fire
 
-DPP is **not always triggered**. All three conditions must be true:
+DPP is **not always triggered**. All three conditions must be true for it to work:
 
 1. **The fact table must be partitioned** on the join key (`.partitionBy("col")`)
 2. **The dimension table must be small enough to broadcast**: it either fits under `spark.sql.autoBroadcastJoinThreshold` (default 10MB), or you hint it explicitly with `broadcast()`
 3. **`spark.sql.optimizer.dynamicPartitionPruning.enabled = true`** (default: `true` in Spark 3.0+)
 
 If the dimension table is too large to broadcast, DPP won't fire because there's nothing to reuse.
-
-> **The config `spark.sql.optimizer.dynamicPartitionPruning.reuseBroadcastOnly`** (default: `true`) means DPP only activates when a `BroadcastExchange` can be reused. If you set it to `false`, Spark will build a separate subquery just for pruning which adds overhead and is rarely worth it.
 
 ***
 
