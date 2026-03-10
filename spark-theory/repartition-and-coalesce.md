@@ -13,6 +13,10 @@ When Spark loads a DataFrame, it splits it into partitions automatically. Each p
 - **Too few partitions** → some executors sit idle, tasks take too long
 - **Too many partitions** → scheduling overhead, too many tiny tasks, driver bottleneck
 
+### How to Identify If Spark Partitions Are Too Many or Too Few
+In Spark (including Databricks), the number of partitions should be based on dataset size, partition size, and cluster parallelism. A common production guideline is to keep partition sizes between 128 MB and 256 MB. This range balances efficient parallel processing and manageable memory usage.
+
+
 This is how you check the current partition count of any DataFrame:
 
 ```python
@@ -70,13 +74,6 @@ Spark computes a minimal merge that combines nearby partitions. Some partitions 
 > **Important constraint:** You cannot use `coalesce()` to *increase* the number of partitions. Calling `df.coalesce(500)` on a 200-partition DataFrame is a no-op. It stays at 200.
 
 ***
-
-### How to Identify If Spark Partitions Are Too Many or Too Few
-In Spark (including Databricks), the number of partitions should be based on dataset size, partition size, and cluster parallelism. A common production guideline is to keep partition sizes between 128 MB and 256 MB. This range balances efficient parallel processing and manageable memory usage.
-
-Too many partitions → very small partitions, leading to high task scheduling overhead, JVM overhead, and the small files problem.
-Too few partitions → very large partitions, causing memory pressure, long-running tasks, and poor parallelism.
-
 
 ### The Shuffle Difference, Visualized
 
