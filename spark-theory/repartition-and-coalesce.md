@@ -13,6 +13,10 @@ When Spark loads a DataFrame, it splits it into partitions automatically. Each p
 - **Too few partitions** → some executors sit idle, tasks take too long
 - **Too many partitions** → scheduling overhead, too many tiny tasks, driver bottleneck
 
+### How to Identify If Spark Partitions Are Too Many or Too Few
+In Spark (including Databricks), the number of partitions should be based on dataset size, partition size, and cluster parallelism. A common production guideline is to keep partition sizes between 128 MB and 256 MB. This range balances efficient parallel processing and manageable memory usage.
+
+
 This is how you check the current partition count of any DataFrame:
 
 ```python
@@ -188,6 +192,7 @@ If you see one partition with 10x the rows of others, use `repartition()` — no
 - You want to route rows by column using `.repartition(n, "col")`
 
 **Common mistake:** Using `repartition()` right before writing output "just to be safe." If your data is already balanced, you're paying full shuffle cost for no benefit. Use `coalesce()` instead.
+
 
 ***
 
