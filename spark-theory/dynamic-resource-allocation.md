@@ -1,6 +1,6 @@
 By default, a Spark application locks in its resources at startup — you specify a fixed number of executors, and they stick around for the entire lifetime of the job, whether they are busy or idle. Dynamic Resource Allocation (DRA) changes this by letting Spark **add and remove executors at runtime** based on actual workload demand.
 
-*Think of it like auto-scaling for your Spark job. Instead of reserving a fixed number of seats at a restaurant for the entire evening, you grab more chairs when friends arrive and give them back when people leave.*
+*Think of it like auto-scaling in a Spark cluster. Instead of provisioning a fixed number of executors upfront, the system allocates additional executors when workload increases and releases them when demand drops.*
 
 ## The Problem with Static Allocation
 
@@ -41,17 +41,17 @@ There is a special case for executors holding cached data: they use a separate, 
 
 ### The Full Lifecycle
 
-![Dynamic Resource Allocation](../images/dynamic-resource-allocation.png)
+![Dynamic Resource Allocation](/images/dynamic-resource-allocation.png)
 
 ***
 
-## External Shuffle Service: The Critical Dependency
+## External Shuffle Service
 
 When Spark removes an executor, any **shuffle data** stored on that executor would normally be lost. Without mitigation, downstream stages that need that shuffle data would fail, forcing expensive recomputation of entire stages.
 
 This is where the **External Shuffle Service** comes in. It is a long-running process on each worker node (independent of executors) that serves shuffle files. When enabled, executors write shuffle output to local disk and the external shuffle service handles serving that data to other executors. This decouples shuffle data from executor lifetimes.
 
-**Without External Shuffle Service:** Removing an executor = losing its shuffle files = stage failures.
+**Without External Shuffle Service:** Removing an executor = losing its shuffle files = Shuffle files written by that executor must be recomputed unnecessarily.
 **With External Shuffle Service:** Removing an executor is safe because shuffle files are served by the independent shuffle service process.
 
 Starting from **Spark 3.0**, there is an alternative: **shuffle tracking** (`spark.dynamicAllocation.shuffleTracking.enabled`). Instead of relying on an external service, Spark tracks which executors hold active shuffle data and simply **refuses to remove them** until the data is no longer needed. This avoids the operational overhead of deploying and maintaining the external shuffle service, though it may keep some executors around longer than strictly necessary.
@@ -95,8 +95,6 @@ spark-submit \
   --conf spark.shuffle.service.enabled=true \
   my_spark_job.py
 ```
-
-> **Important:** Do not set `spark.executor.instances` when using dynamic allocation. Setting a fixed executor count disables DRA. If you must set it, also set `spark.dynamicAllocation.enabled=true` explicitly — DRA will take precedence.
 
 ***
 
@@ -219,13 +217,13 @@ Setting `spark.executor.instances` effectively tells Spark "I want exactly this 
 Without the external shuffle service or shuffle tracking, removed executors take their shuffle files with them. This causes `FetchFailedException` errors and stage retries, making the job slower than static allocation. Always enable one of the two shuffle protection mechanisms.
 
 ### 3. Setting `maxExecutors` too high
-On a shared cluster with a YARN fair-scheduler queue, a single DRA-enabled job can grab all available resources during its peak, starving other applications. Set `maxExecutors` to a reasonable ceiling that reflects your fair share of the cluster.
+On a shared cluster with a YARN fair-scheduler queue, a single DRA enabled job can grab all available resources during its peak, starving other applications. Set `maxExecutors` to a reasonable ceiling that reflects your fair share of the cluster.
 
 ### 4. Too-aggressive idle timeout
 Setting `executorIdleTimeout` below 30 seconds causes executor **thrashing** — executors are removed and re-requested repeatedly, paying JVM startup costs each time. The default of 60 seconds is a good balance for most batch workloads. For streaming, use 120-180 seconds.
 
 ### 5. Ignoring `cachedExecutorIdleTimeout` with `.cache()`
-If your job caches large DataFrames and `cachedExecutorIdleTimeout` is set to its default of infinity, those executors will never be released — even if the cached data is never accessed again. Set a finite timeout if cache reuse is uncertain.
+If your job caches large DataFrames and `cachedExecutorIdleTimeout` is set to its default of infinity, those executors will never be released even if the cached data is never accessed again. Set a finite timeout if cache reuse is uncertain.
 
 ***
 
