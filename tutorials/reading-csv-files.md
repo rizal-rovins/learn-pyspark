@@ -1,7 +1,7 @@
 When it comes to handling CSV files, PySpark offers a range of flexible options. Whether you're reading from or writing to a CSV, PySpark's built-in capabilities make it easy to configure these operations exactly how you want.
 
 ### Practice Question
-Read the tutorial below and try solving this problem to get hands-on practice [here](../pyspark-coding-interview-questions/load-and-transform-data).
+Read the tutorial below and try solving this problem to get hands-on practice [here](/pyspark-coding-interview-questions/load-and-transform-data).
 
 ### Step 1: Start with a `SparkSession`
 

@@ -1,7 +1,7 @@
 JSON files are a popular choice for structured data. PySpark offers flexible methods to read from and write to JSON files, with various options to handle different data structures, formatting, and file organization needs. Let's dive into how to work with JSON files in PySpark.
 
 ### Practice Question
-Read the tutorial below and try solving this problem to get hands-on practice [here](../pyspark-coding-interview-questions/load-and-transform-data-json).
+Read the tutorial below and try solving this problem to get hands-on practice [here](/pyspark-coding-interview-questions/load-and-transform-data-json).
 
 ### Step 1: Start with a `SparkSession`
 

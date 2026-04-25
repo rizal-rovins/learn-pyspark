@@ -1,7 +1,7 @@
 Working with missing values is one of the most common tasks in data engineering. PySpark provides several useful functions to clean, replace, or drop null values.
 
 ### Practice Question
-Read the tutorial below and try solving this problem to get hands-on practice [here](../pyspark-coding-interview-questions/handling-null-values).
+Read the tutorial below and try solving this problem to get hands-on practice [here](/pyspark-coding-interview-questions/handling-null-values).
 
 ---
 
