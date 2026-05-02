@@ -36,7 +36,7 @@ The four main join strategies are:
 spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "10MB")
 
 # Use hint to force broadcast
-small_df.join(large_df.hint("BROADCAST"), "user_id")
+large_df.join(small_df.hint("BROADCAST"), "user_id")
 # Or use programmatic API
 from pyspark.sql.functions import broadcast
 large_df.join(broadcast(small_df), "user_id")
